@@ -15,17 +15,23 @@ class EnhancedVectorStore:
         """Initialize vector store with Gemini"""
         self.api_key = os.getenv('GEMINI_API_KEY')
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY not found")
-        
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+            print("⚠️ WARNING: GEMINI_API_KEY not found. Vector store will be disabled.")
+            self.model = None
+            self.documents = []
+            return
+            
+        try:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel('gemini-pro')
+            print("✅ Enhanced Vector Store initialized with Gemini")
+        except Exception as e:
+            print(f"❌ Failed to initialize Gemini Vector Store: {e}")
+            self.model = None
         
         # In-memory storage for embeddings (for demo)
         # In production, use ChromaDB or similar
         self.documents = []
         self.embeddings_cache = {}
-        
-        print("✅ Enhanced Vector Store initialized with Gemini")
     
     def add_stores(self, stores: List[Dict]):
         """Add stores to vector store"""

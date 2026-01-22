@@ -14,20 +14,24 @@ class GeminiChatbotService:
     def __init__(self):
         """Initialize Gemini chatbot service"""
         self.api_key = os.getenv('GEMINI_API_KEY')
+        self.client = None
         
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment variables")
-        
-        # Configure Gemini client with new SDK
-        self.client = genai.Client(api_key=self.api_key)
+            print("⚠️ WARNING: GEMINI_API_KEY not found. Chatbot will run in fallback mode.")
+            # Do not raise error to prevent app crash
+        else:
+            try:
+                # Configure Gemini client with new SDK
+                self.client = genai.Client(api_key=self.api_key)
+                print("✅ Gemini Chatbot Service initialized successfully")
+            except Exception as e:
+                print(f"❌ Failed to initialize Gemini client: {e}")
         
         # Model name
         self.model_name = 'models/gemini-2.5-flash'
         
         # Conversation history storage
         self.conversations = {}
-        
-        print("✅ Gemini Chatbot Service initialized successfully")
     
     def _build_system_context(self, db_context: Dict) -> str:
         """Build comprehensive system context from database"""
@@ -207,6 +211,11 @@ Important Guidelines:
             prompt += f"**Current User Message:**\n{user_message}\n\n"
             prompt += "**Your Response (as MallBuddy):**"
             
+            # Check if client is initialized
+            if not self.client:
+                print("⚠️ Gemini client not initialized, using fallback")
+                return self._fallback_response(user_message)
+
             # Generate response using Gemini
             response = self.client.models.generate_content(
                 model=self.model_name,
