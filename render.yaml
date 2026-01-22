@@ -20,7 +20,7 @@ services:
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-    healthCheckPath: /api/health
+    healthCheckPath: /health
 
   # Frontend Static Site
   - type: web
