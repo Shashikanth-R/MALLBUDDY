@@ -565,8 +565,10 @@
     <!-- Include floor layouts data -->
     <script src="floor-layouts.js"></script>
 
+    <script src="config.js"></script>
     <script>
-        const BACKEND_URL = 'http://localhost:5000';
+        // BACKEND_URL is now provided by config.js
+        const BACKEND_URL = window.BACKEND_URL || 'http://localhost:5000';
         let currentFloor = '1';
         let isNavigating = false;
         let navigationRoute = null;

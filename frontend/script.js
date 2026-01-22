@@ -86,11 +86,11 @@ async function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
 
-    // Send to backend - Use absolute URL for backend API
-    const BACKEND_URL = 'http://localhost:5000';
+    // Send to backend - BACKEND_URL is provided by config.js
+    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/chat/`, {
+        const response = await fetch(`${backendUrl}/api/chat/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

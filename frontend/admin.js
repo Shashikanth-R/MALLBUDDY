@@ -1,4 +1,5 @@
-const BACKEND_URL = 'http://localhost:5000';
+// BACKEND_URL - uses config.js if available, otherwise fallback to localhost
+const BACKEND_URL = window.BACKEND_URL || 'http://localhost:5000';
 let currentEditId = null;
 let editMode = false;
 let categories = [];

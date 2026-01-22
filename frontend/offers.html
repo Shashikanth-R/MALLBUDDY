@@ -319,8 +319,10 @@
         </div>
     </main>
 
+    <script src="config.js"></script>
     <script>
-        const BACKEND_URL = 'http://localhost:5000';
+        // BACKEND_URL is now provided by config.js
+        const BACKEND_URL = window.BACKEND_URL || 'http://localhost:5000';
 
         // Load offers
         async function loadOffers() {
