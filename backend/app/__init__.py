@@ -103,4 +103,9 @@ def create_app(config_class=Config):
     def health():
         return {'status': 'healthy', 'service': 'MallBuddy API'}, 200
 
+    # Ensure database tables exist (Simple fix for Render/SQLite)
+    with app.app_context():
+        db.create_all()
+        print("Database tables created/verified")
+
     return app
