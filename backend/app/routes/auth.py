@@ -27,6 +27,8 @@ def validate_password(password):
     return True, "Password is valid"
 
 
+from datetime import datetime
+
 @bp.route('/register', methods=['POST'])
 def register():
     """User registration with validation"""
@@ -54,7 +56,8 @@ def register():
         user = User(
             name=data['name'],
             email=data['email'],
-            password_hash=generate_password_hash(data['password'])
+            password_hash=generate_password_hash(data['password']),
+            last_login=datetime.utcnow()
         )
         
         db.session.add(user)
@@ -89,6 +92,10 @@ def login():
     
     if not user.is_active:
         return jsonify({'error': 'Account is inactive'}), 403
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    db.session.commit()
     
     access_token = create_access_token(identity=user.id)
     

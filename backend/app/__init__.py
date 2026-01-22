@@ -38,18 +38,18 @@ def create_app(config_class=Config):
     })
 
     # Register blueprints
-    from app.routes import auth, chat, stores, offers, events, facilities, navigation, admin
+    from app.routes import auth, chat, stores, offers, events, facilities, navigation
     # Temporarily disable analytics to fix startup
-    # from app.routes import analytics
-    
+    # Temporarily disable analytics to fix startup
+    from app.routes import admin_routes
+    app.register_blueprint(chat.bp, url_prefix='/api/chat')
+    app.register_blueprint(navigation.bp, url_prefix='/api/navigation')
+    app.register_blueprint(admin_routes.bp)
     app.register_blueprint(auth.bp)
-    app.register_blueprint(chat.bp)
     app.register_blueprint(stores.bp)
     app.register_blueprint(offers.bp)
     app.register_blueprint(events.bp)
     app.register_blueprint(facilities.bp)
-    app.register_blueprint(navigation.bp)
-    app.register_blueprint(admin.bp)
     # app.register_blueprint(analytics.bp)  # Temporarily disabled
 
     # Root endpoint - API documentation

@@ -11,6 +11,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
 
     # Relationships
@@ -26,6 +27,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'created_at': self.created_at.isoformat(),
+            'last_login': self.last_login.isoformat() if self.last_login else None,
             'is_active': self.is_active
         }
 

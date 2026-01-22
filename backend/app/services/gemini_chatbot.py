@@ -22,7 +22,7 @@ class GeminiChatbotService:
         self.client = genai.Client(api_key=self.api_key)
         
         # Model name
-        self.model_name = 'gemini-2.5-flash'
+        self.model_name = 'models/gemini-2.5-flash'
         
         # Conversation history storage
         self.conversations = {}

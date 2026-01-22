@@ -31,7 +31,7 @@
 
         /* Navigation Mode Header */
         .nav-mode-header {
-            background: linear-gradient(135deg, #6366F1, #7C3AED);
+            background: linear-gradient(135deg, #B794D4, #E8A0B0);
             color: white;
             border-radius: 20px;
             padding: 1.5rem 2rem;
@@ -39,7 +39,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px rgba(155, 123, 199, 0.3);
         }
 
         .nav-route-info {
@@ -141,14 +141,14 @@
         }
 
         .floor-btn:hover {
-            border-color: #6366F1;
-            background: #F9FAFB;
+            border-color: #9B7BC7;
+            background: #FDF8FF;
         }
 
         .floor-btn.active {
-            background: linear-gradient(135deg, #7C3AED, #6366F1);
+            background: linear-gradient(135deg, #B794D4, #E8A0B0);
             color: white;
-            border-color: #6366F1;
+            border-color: #9B7BC7;
         }
 
         .floor-btn.has-route {
@@ -273,7 +273,7 @@
         /* Route Path */
         .route-path {
             fill: none;
-            stroke: #6366F1;
+            stroke: #9B7BC7;
             stroke-width: 5;
             stroke-linecap: round;
             stroke-linejoin: round;
@@ -290,7 +290,7 @@
 
         .route-path-glow {
             fill: none;
-            stroke: rgba(99, 102, 241, 0.3);
+            stroke: rgba(155, 123, 199, 0.3);
             stroke-width: 12;
             stroke-linecap: round;
             stroke-linejoin: round;
@@ -327,11 +327,11 @@
             padding: 0.75rem;
             background: white;
             border-radius: 8px;
-            border-left: 4px solid #6366F1;
+            border-left: 4px solid #9B7BC7;
         }
 
         .direction-step.current {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(124, 58, 237, 0.1));
+            background: linear-gradient(135deg, rgba(155, 123, 199, 0.1), rgba(232, 160, 176, 0.1));
             border-left-color: #10B981;
         }
 
@@ -397,7 +397,7 @@
         }
 
         .store-item:hover {
-            border-color: #6366F1;
+            border-color: #9B7BC7;
             background: white;
         }
 
@@ -450,11 +450,7 @@
         <div class="header-container">
             <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
                 <div class="logo-icon">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <rect width="32" height="32" rx="8" fill="#6366F1" />
-                        <path d="M16 8L20 12H18V20H14V12H12L16 8Z" fill="white" />
-                        <rect x="10" y="20" width="12" height="2" rx="1" fill="white" />
-                    </svg>
+                    <img src="logo.png" alt="MallBuddy Logo" style="width: 40px; height: 40px; border-radius: 8px;">
                 </div>
                 <span class="logo-text">MallBuddy</span>
             </div>
@@ -546,7 +542,7 @@
                 <!-- Legend -->
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #6366F1;"></div>
+                        <div class="legend-color" style="background: #9B7BC7;"></div>
                         <span>Stores</span>
                     </div>
                     <div class="legend-item">
@@ -590,6 +586,83 @@
         }
 
         // Initialize navigation mode
+        async function init() {
+            try {
+                // Fetch live store data
+                await fetchAndSyncStores();
+            } catch (error) {
+                console.error('Failed to sync stores:', error);
+            }
+
+            const params = parseNavigationParams();
+            loadFloorButtons(); // Load buttons after sync
+
+            if (params) {
+                initNavigationMode(params);
+            } else {
+                selectFloor('1');
+            }
+        }
+
+        // Fetch stores and update FLOOR_LAYOUTS
+        async function fetchAndSyncStores() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/admin/stores`);
+                const data = await response.json();
+                const liveStores = data.stores;
+
+                // Color palette based on category names (simple heuristic)
+                const categoryColors = {
+                    'Fashion': '#6366F1',
+                    'Electronics': '#3B82F6',
+                    'Food': '#F97316',
+                    'Entertainment': '#EC4899',
+                    'Health': '#10B981',
+                    'Other': '#6B7280'
+                };
+
+                // Iterate through all floors in layout
+                Object.keys(FLOOR_LAYOUTS).forEach(floorKey => {
+                    const layout = FLOOR_LAYOUTS[floorKey];
+
+                    // Update stores in layout
+                    layout.stores.forEach(layoutStore => {
+                        // Find matching live store by unit
+                        // Normalize unit numbers (handle distinct formats e.g. "101" vs "Unit 101")
+                        const match = liveStores.find(s =>
+                            s.unit && s.unit.toString().trim() === layoutStore.unit.toString().trim()
+                        );
+
+                        if (match) {
+                            layoutStore.name = match.name;
+                            layoutStore.id = match.id; // Update ID to match DB
+                            // Set color based on category name
+                            const catName = match.category_name || 'Other';
+                            // Simple substring match for category colors
+                            let color = '#6B7280';
+                            if (/fashion|clothing/i.test(catName)) color = categoryColors.Fashion;
+                            else if (/electronic|digital/i.test(catName)) color = categoryColors.Electronics;
+                            else if (/food|cafe|restaurant/i.test(catName)) color = categoryColors.Food;
+                            else if (/movie|cinema|game/i.test(catName)) color = categoryColors.Entertainment;
+                            else if (/health|pharmacy/i.test(catName)) color = categoryColors.Health;
+
+                            layoutStore.color = color;
+                        } else {
+                            // No store in this unit -> Vacant
+                            layoutStore.name = 'Vacant';
+                            layoutStore.color = '#E5E7EB'; // Gray for composed/vacant
+                            // Keep unit for reference
+                        }
+                    });
+                });
+
+                console.log('Map synchronized with live store data');
+
+            } catch (error) {
+                console.error('Error fetching stores:', error);
+            }
+        }
+
         function initNavigationMode(params) {
             isNavigating = true;
 
@@ -599,6 +672,9 @@
 
             if (!fromLocation || !toLocation) {
                 console.error('Could not find navigation locations');
+                // Fallback to regular mode if nav invalid
+                document.getElementById('navModeHeader').style.display = 'none';
+                document.getElementById('regularHeader').style.display = 'block';
                 return;
             }
 
@@ -882,15 +958,7 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            loadFloorButtons();
-
-            // Check for navigation params
-            const navParams = parseNavigationParams();
-            if (navParams) {
-                initNavigationMode(navParams);
-            } else {
-                selectFloor('1');
-            }
+            init();
         });
     </script>
 </body>

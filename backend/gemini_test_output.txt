@@ -1,0 +1,9 @@
+✅ Found API Key: AIzaS...Vkvbg
+
+Testing 2.5 Flash with NEW API KEY...
+
+Testing model: models/gemini-2.5-flash...
+✅ Success with models/gemini-2.5-flash! Response: Hello!
+
+Testing model: models/gemini-flash-latest...
+✅ Success with models/gemini-flash-latest! Response: Hello!
