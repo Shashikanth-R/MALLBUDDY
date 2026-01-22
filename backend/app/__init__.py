@@ -107,5 +107,32 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
         print("Database tables created/verified")
+        
+        # Seed default admin user if not exists
+        try:
+            from app.models import Admin
+            from werkzeug.security import generate_password_hash
+            
+            admin_email = app.config.get('ADMIN_EMAIL', 'admin@mallbuddy.com')
+            admin = Admin.query.filter_by(email=admin_email).first()
+            
+            if not admin:
+                print(f"Creating default admin user: {admin_email}")
+                admin_pass = app.config.get('ADMIN_PASSWORD', 'Admin@123')
+                
+                new_admin = Admin(
+                    name='System Administrator',
+                    email=admin_email,
+                    password_hash=generate_password_hash(admin_pass),
+                    role='super_admin',
+                    is_active=True
+                )
+                db.session.add(new_admin)
+                db.session.commit()
+                print("✅ Default admin user created successfully")
+            else:
+                print("Admin user already exists")
+        except Exception as e:
+            print(f"❌ Failed to seed admin user: {e}")
 
     return app
