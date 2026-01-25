@@ -187,5 +187,44 @@ def create_app(config_class=Config):
         except Exception as e:
             db.session.rollback()
             print(f"❌ Failed to seed categories: {e}")
+        
+        # Seed default Stores if not exists (based on floor-layouts.js)
+        try:
+            from app.models import Store
+            
+            if Store.query.count() == 0:
+                print("Seeding default Stores...")
+                # mall_id=1 (Elements Mall)
+                # Categories: 1=Fashion, 2=Food&Beverages, 3=Electronics, 4=Entertainment, 5=Beauty, 6=Sports
+                default_stores = [
+                    # Floor 1 - Fashion & Lifestyle
+                    {"name": "Zara", "mall_id": 1, "category_id": 1, "floor": "1", "unit": "105", "description": "International fashion brand", "status": "open"},
+                    {"name": "H&M", "mall_id": 1, "category_id": 1, "floor": "1", "unit": "110", "description": "Affordable fashion for all", "status": "open"},
+                    {"name": "Starbucks", "mall_id": 1, "category_id": 2, "floor": "1", "unit": "115", "description": "Premium coffee and beverages", "status": "open"},
+                    
+                    # Floor 2 - Sports & Electronics
+                    {"name": "Adidas", "mall_id": 1, "category_id": 6, "floor": "2", "unit": "205", "description": "Sports apparel and shoes", "status": "open"},
+                    {"name": "Nike", "mall_id": 1, "category_id": 6, "floor": "2", "unit": "210", "description": "Athletic footwear and apparel", "status": "open"},
+                    {"name": "Croma Electronics", "mall_id": 1, "category_id": 3, "floor": "2", "unit": "215", "description": "Electronics and gadgets store", "status": "open"},
+                    
+                    # Floor 3 - Food Court (unit 300 left vacant)
+                    {"name": "McDonald's", "mall_id": 1, "category_id": 2, "floor": "3", "unit": "301", "description": "Fast food restaurant", "status": "open"},
+                    {"name": "Pizza Hut", "mall_id": 1, "category_id": 2, "floor": "3", "unit": "305", "description": "Pizza and Italian cuisine", "status": "open"},
+                    
+                    # Floor 4 - Entertainment (unit 410 left vacant)
+                    {"name": "PVR Cinemas", "mall_id": 1, "category_id": 4, "floor": "4", "unit": "401", "description": "Multiplex cinema with IMAX", "status": "open"},
+                ]
+                
+                for store_data in default_stores:
+                    store = Store(**store_data)
+                    db.session.add(store)
+                
+                db.session.commit()
+                print(f"✅ {len(default_stores)} Stores created successfully (2 units left vacant: 300, 410)")
+            else:
+                print(f"Stores already exist ({Store.query.count()} found)")
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Failed to seed stores: {e}")
 
     return app
