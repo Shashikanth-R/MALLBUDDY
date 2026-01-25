@@ -422,19 +422,44 @@ async function saveSettings() {
 // Load categories
 async function loadCategories() {
     try {
+        console.log('Loading categories from:', `${BACKEND_URL}/api/stores/categories`);
         const response = await fetch(`${BACKEND_URL}/api/stores/categories`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        categories = data.categories;
+        console.log('Categories loaded:', data);
+        categories = data.categories || [];
 
         const select = document.getElementById('storeCategory');
         if (select) {
             select.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
-            });
+            if (categories.length === 0) {
+                select.innerHTML += '<option value="" disabled>No categories available - please refresh</option>';
+                console.warn('No categories found in database');
+            } else {
+                categories.forEach(cat => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.icon || ''} ${cat.name}</option>`;
+                });
+                console.log(`${categories.length} categories loaded into dropdown`);
+            }
         }
+
+        // Load stores after categories are ready (for offers dropdown)
+        await loadStores();
+
     } catch (error) {
         console.error('Error loading categories:', error);
+        const select = document.getElementById('storeCategory');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading categories - please refresh</option>';
+        }
+        // Show user-friendly alert for critical errors
+        if (!navigator.onLine) {
+            alert('Network error: Please check your internet connection and refresh the page.');
+        }
     }
 }
 

@@ -134,5 +134,58 @@ def create_app(config_class=Config):
                 print("Admin user already exists")
         except Exception as e:
             print(f"❌ Failed to seed admin user: {e}")
+        
+        # Seed default Mall if not exists
+        try:
+            from app.models import Mall
+            
+            if Mall.query.count() == 0:
+                print("Seeding default Mall...")
+                mall = Mall(
+                    name="Elements Mall",
+                    city="Bangalore",
+                    address="123 MG Road, Bangalore, Karnataka 560001",
+                    operating_hours={
+                        "mon-thu": "10:00 AM - 10:00 PM",
+                        "fri-sun": "10:00 AM - 11:00 PM"
+                    }
+                )
+                db.session.add(mall)
+                db.session.commit()
+                print("✅ Default Mall created successfully")
+            else:
+                print("Mall already exists")
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Failed to seed mall: {e}")
+        
+        # Seed default Categories if not exists
+        try:
+            from app.models import Category
+            
+            if Category.query.count() == 0:
+                print("Seeding default Categories...")
+                default_categories = [
+                    {"name": "Fashion", "icon": "👗", "description": "Clothing and apparel stores"},
+                    {"name": "Food & Beverages", "icon": "🍔", "description": "Restaurants and food courts"},
+                    {"name": "Electronics", "icon": "📱", "description": "Electronics and gadgets"},
+                    {"name": "Entertainment", "icon": "🎬", "description": "Movies, games, and entertainment"},
+                    {"name": "Beauty", "icon": "💄", "description": "Beauty and cosmetics"},
+                    {"name": "Sports", "icon": "⚽", "description": "Sports and fitness"},
+                    {"name": "Home & Lifestyle", "icon": "🏠", "description": "Home decor and lifestyle products"},
+                    {"name": "Kids", "icon": "🧸", "description": "Toys, kids clothing, and accessories"}
+                ]
+                
+                for cat_data in default_categories:
+                    cat = Category(**cat_data)
+                    db.session.add(cat)
+                
+                db.session.commit()
+                print(f"✅ {len(default_categories)} Categories created successfully")
+            else:
+                print(f"Categories already exist ({Category.query.count()} found)")
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Failed to seed categories: {e}")
 
     return app
